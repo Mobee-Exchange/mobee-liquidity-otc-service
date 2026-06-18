@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     fireblocks_secret_key: str = ""
     fireblocks_base_url: str = "https://api.fireblocks.io"
 
+    # Google Sheets. Path to the service-account credentials JSON file.
+    google_sheets_credentials_file: str = "src/core/sheets.json"
+
 
 @lru_cache
 def get_settings() -> Settings:
