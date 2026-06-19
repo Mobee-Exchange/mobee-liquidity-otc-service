@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     # Google Sheets. Path to the service-account credentials JSON file.
     google_sheets_credentials_file: str = "src/core/sheets.json"
 
+    # Database connections
+    db_clickhouse_url: str = ""
+    db_datadb_url: str = ""
+
 
 @lru_cache
 def get_settings() -> Settings:
