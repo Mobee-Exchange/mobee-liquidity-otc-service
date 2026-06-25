@@ -102,6 +102,9 @@ class Ethereum(_ChainTokens, Enum):
     USDC = EVMToken(
         symbol="USDC", contract="0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", decimals=6
     )
+    STBT = EVMToken(
+        symbol="STBT", contract="0x530824DA86689C9C17CdC2871Ff29B058345b44a", decimals=18
+    )
 
 
 class Bsc(_ChainTokens, Enum):

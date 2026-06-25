@@ -59,11 +59,15 @@ class FireblocksClient:
             )
             for asset in assets
         ]
+    
+    def get_vault_infos(self, vault_id: int) -> list[FireblocksAssetBalance]:
+        """All asset balances inside a single vault account."""
+        return self.get_vault_balances(vault_id)
 
-    def get_vault_balances(self, vault_id: str) -> list[FireblocksAssetBalance]:
+    def get_vault_balances(self, vault_id: int) -> list[FireblocksAssetBalance]:
         """All asset balances inside a single vault account."""
         try:
-            account = self._sdk.get_vault_account_by_id(vault_id)
+            account = self._sdk.get_vault_account_by_id(str(vault_id))
         except Exception as exc:  # SDK raises bare Exceptions / API errors
             raise FireblocksError(f"Failed to fetch vault {vault_id}: {exc}") from exc
 

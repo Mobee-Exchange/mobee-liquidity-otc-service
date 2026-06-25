@@ -35,6 +35,34 @@ class Settings(BaseSettings):
 
     # Google Sheets. Path to the service-account credentials JSON file.
     google_sheets_credentials_file: str = "src/core/sheets.json"
+    otc_spreadsheet_url: str = ""
+    otc_tab_balance: str = "Balance"
+    otc_tab_client_balance: str = "Client Balance"
+
+    # Internal loan snapshot
+    internal_loan_spreadsheet_url: str = ""
+    internal_loan_tab_summary: str = "Summary"
+
+    # Balance ingest spreadsheet (ClientBalance + BalanceIDR tabs)
+    balance_ingest_spreadsheet_url: str = ""
+    balance_ingest_tab_client: str = "ClientBalance"
+    balance_ingest_tab_idr_bank: str = "BalanceIDR"
+
+    # ClickHouse — set CLICKHOUSE_URL directly, or let it be built from the parts below
+    clickhouse_url: str = ""
+    clickhouse_host: str = "localhost"
+    clickhouse_port: int = 8123
+    clickhouse_database: str = "default"
+    clickhouse_user: str = "default"
+    clickhouse_password: str = ""
+
+    def get_clickhouse_url(self) -> str:
+        if self.clickhouse_url:
+            return self.clickhouse_url
+        return (
+            f"clickhouse+http://{self.clickhouse_user}:{self.clickhouse_password}"
+            f"@{self.clickhouse_host}:{self.clickhouse_port}/{self.clickhouse_database}"
+        )
 
 
 @lru_cache

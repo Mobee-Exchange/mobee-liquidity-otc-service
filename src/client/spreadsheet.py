@@ -52,6 +52,13 @@ class SpreadsheetClient:
     def _clear_sheet(self, sheet: str, wks: str) -> None:
         self._open_gs(sheet, wks).clear()
 
+    def list_worksheets(self, link: str) -> list[str]:
+        key = _extract_key(link)
+        return [ws.title for ws in self._connect_sheets().open_by_key(key).worksheets()]
+
+    def read_raw(self, link: str, wks: str) -> list[list[str]]:
+        return self._open_gs_by_link(link, wks).get_all_values()
+
     def read(self, link: str, wks: str) -> pd.DataFrame:
         return self._open_gs_by_link(link, wks).get_as_df()
 

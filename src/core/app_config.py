@@ -1,0 +1,64 @@
+from __future__ import annotations
+
+from functools import lru_cache
+from pathlib import Path
+from typing import Any
+
+import yaml
+from pydantic import BaseModel, Field
+
+
+_DEFAULT_CONFIG_PATH = Path("configurations/config.yaml")
+
+
+class ClickhousePoolConfig(BaseModel):
+    pool_size: int = Field(2, alias="PoolSize")
+    max_overflow: int = Field(5, alias="MaxOverflow")
+    pool_timeout: int = Field(30, alias="PoolTimeout")
+    pool_recycle: int = Field(900, alias="PoolRecycle")
+
+    model_config = {"populate_by_name": True}
+
+
+class DatabaseConfig(BaseModel):
+    clickhouse: ClickhousePoolConfig = Field(default_factory=ClickhousePoolConfig, alias="Clickhouse")
+
+    model_config = {"populate_by_name": True}
+
+
+class CWWallet(BaseModel):
+    name: str = Field(..., alias="Name")
+    address: str = Field(..., alias="Address")
+
+    model_config = {"populate_by_name": True}
+
+
+class ServiceConfig(BaseModel):
+    fireblocks_vault_ids: list[int] = Field(default_factory=list, alias="FireblocksVaultIds")
+    evm_cw_wallets: list[CWWallet] = Field(default_factory=list, alias="EVMCWWallets")
+    cw_wallets: list[CWWallet] = Field(default_factory=list, alias="CWWallets")
+
+    model_config = {"populate_by_name": True}
+
+
+class AppConfig(BaseModel):
+    """Non-secret configuration loaded from YAML (configurations/config.yaml).
+
+    Credentials and secrets live in .env / Settings (pydantic-settings).
+    This class holds only structural config: vault IDs, wallet addresses, etc.
+    """
+
+    database: DatabaseConfig = Field(default_factory=DatabaseConfig, alias="DatabaseConfig")
+    service: ServiceConfig = Field(..., alias="ServiceConfig")
+
+    model_config = {"populate_by_name": True}
+
+    @classmethod
+    def from_yaml(cls, path: Path = _DEFAULT_CONFIG_PATH) -> "AppConfig":
+        raw: dict[str, Any] = yaml.safe_load(path.read_text(encoding="utf-8"))
+        return cls.model_validate(raw)
+
+
+@lru_cache
+def get_app_config() -> AppConfig:
+    return AppConfig.from_yaml()
