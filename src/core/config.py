@@ -55,6 +55,10 @@ class Settings(BaseSettings):
     clickhouse_database: str = "default"
     clickhouse_user: str = "default"
     clickhouse_password: str = ""
+    clickhouse_pool_size: int = 2
+    clickhouse_max_overflow: int = 5
+    clickhouse_pool_timeout: int = 30
+    clickhouse_pool_recycle: int = 900
 
     def get_clickhouse_url(self) -> str:
         if self.clickhouse_url:
