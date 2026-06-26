@@ -4,7 +4,7 @@ import pandas as pd
 import pygsheets
 from pygsheets import client
 
-from src.core.config import get_settings
+from src.core.config import settings
 
 # https://docs.google.com/spreadsheets/d/<KEY>/edit#gid=0
 _SHEET_KEY_RE = re.compile(r"/spreadsheets/d/([a-zA-Z0-9-_]+)")
@@ -20,7 +20,7 @@ def _get_sheets_client() -> client.Client:
     global _gc
     if _gc is None:
         _gc = pygsheets.authorize(
-            service_file=get_settings().google_sheets_credentials_file
+            service_file=settings.google_sheets_credentials_file
         )
     return _gc
 

@@ -3,20 +3,21 @@ from datetime import datetime
 from decimal import Decimal, InvalidOperation
 
 from src.client.spreadsheet import SpreadsheetClient
-from src.core.config import get_settings
+from src.core.config import settings
 from src.domain.entity.ingest import LiquidityBalanceRawData
 from src.repository.balance_ingest import BalanceIngestRepository
 
 log = logging.getLogger(__name__)
 
 
-class SpreadsheetBalanceIngestService:
+class SpreadsheetIngestService:
     """Reads ClientBalance and BalanceIDR tabs from Google Sheets and writes
     to the unified balance_ingest table via BalanceIngestRepository."""
 
     def __init__(self, sheets: SpreadsheetClient, repo: BalanceIngestRepository) -> None:
         self._sheets = sheets
         self._repo = repo
+        self._settings = settings
 
     def _to_str(self, value) -> str:
         s = str(value).strip()
@@ -34,14 +35,13 @@ class SpreadsheetBalanceIngestService:
             return None
 
     def ingest_client_balances(self, snapshot_ts: datetime) -> int:
-        s = get_settings()
-        log.info("Reading tab '%s'…", s.balance_ingest_tab_client)
-        df = self._sheets.read(s.balance_ingest_spreadsheet_url, s.balance_ingest_tab_client)
+        log.info("Reading tab '%s'…", self._settings.balance_ingest_tab_client)
+        df = self._sheets.read(self._settings.balance_ingest_spreadsheet_url, self._settings.balance_ingest_tab_client)
         df.columns = [c.strip() for c in df.columns]
 
         rows = []
         for i, row in df.iterrows():
-            client_name = self._to_str(row["client_name"]).upper()
+            client_name = self._to_str(row["client_name"])
             if not client_name:
                 log.warning("Row %d: skipping — empty client_name", i)
                 continue
@@ -51,29 +51,27 @@ class SpreadsheetBalanceIngestService:
                 continue
             rows.append(LiquidityBalanceRawData(
                 timestamp=snapshot_ts,
-                platform="client_balance",
+                platform="Client Balance",
                 source_name=client_name,
                 currency=self._to_str(row["currency"]),
-                network="",
                 amount=amount,
             ))
 
         if rows:
             self._repo.insert_total_balance(rows)
-            log.info("Inserted %d client_balance rows", len(rows))
+            log.info("Inserted %d Client Balance rows", len(rows))
         else:
-            log.warning("No valid rows in '%s' tab", s.balance_ingest_tab_client)
+            log.warning("No valid rows in '%s' tab", self._settings.balance_ingest_tab_client)
         return len(rows)
 
     def ingest_idr_bank_balances(self, snapshot_ts: datetime) -> int:
-        s = get_settings()
-        log.info("Reading tab '%s'…", s.balance_ingest_tab_idr_bank)
-        df = self._sheets.read(s.balance_ingest_spreadsheet_url, s.balance_ingest_tab_idr_bank)
+        log.info("Reading tab '%s'…", self._settings.balance_ingest_tab_idr_bank)
+        df = self._sheets.read(self._settings.balance_ingest_spreadsheet_url, self._settings.balance_ingest_tab_idr_bank)
         df.columns = [c.strip() for c in df.columns]
 
         rows = []
         for i, row in df.iterrows():
-            bank = self._to_str(row["bank"]).upper()
+            bank = self._to_str(row["bank"])
             if not bank:
                 log.warning("Row %d: skipping — empty bank", i)
                 continue
@@ -86,7 +84,6 @@ class SpreadsheetBalanceIngestService:
                 platform=bank,
                 source_name=self._to_str(row["account"]),
                 currency="IDR",
-                network="",
                 amount=amount,
             ))
 
@@ -94,14 +91,11 @@ class SpreadsheetBalanceIngestService:
             self._repo.insert_total_balance(rows)
             log.info("Inserted %d idr_bank rows", len(rows))
         else:
-            log.warning("No valid rows in '%s' tab", s.balance_ingest_tab_idr_bank)
+            log.warning("No valid rows in '%s' tab", self._settings.balance_ingest_tab_idr_bank)
         return len(rows)
 
     def run(self, *, full: bool = False) -> dict[str, int]:
         self._repo.ensure_table()
-        if full:
-            log.info("--full: truncating balance_ingest")
-            self._repo.truncate()
 
         snapshot_ts = datetime.now()
         log.info("Snapshot timestamp: %s", snapshot_ts)

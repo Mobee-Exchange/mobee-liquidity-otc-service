@@ -1,6 +1,10 @@
-from sqlalchemy.orm import Session
-from sqlalchemy import text
+from contextlib import contextmanager
+from typing import Iterator
 
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+
+from src.db.clickhouse import SessionLocal
 from src.domain.entity.ingest import LiquidityBalanceRawData
 
 _CREATE_BALANCE_INGEST_SQL = """
@@ -19,26 +23,51 @@ ORDER BY (timestamp, platform, source_name, currency)
 
 
 class BalanceIngestRepository:
-    """Persistence port for the unified balance_ingest table."""
+    """Data access for the unified balance_ingest table.
 
-    def __init__(self, session: Session) -> None:
-        self._session = session
+    Owns session lifecycle: each method runs in its own short-lived
+    :meth:`session_scope` (commit on success, roll back on error, always
+    close). All balance_ingest SQL lives here.
+    """
+
+    def __init__(self, session_factory=SessionLocal) -> None:
+        self._session_factory = session_factory
+
+    @contextmanager
+    def session_scope(self) -> Iterator[Session]:
+        session = self._session_factory()
+        try:
+            yield session
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
     def ensure_table(self) -> None:
-        self._session.execute(text(_CREATE_BALANCE_INGEST_SQL))
-        self._session.commit()
+        with self.session_scope() as session:
+            session.execute(text(_CREATE_BALANCE_INGEST_SQL))
 
     def truncate(self) -> None:
-        self._session.execute(text("TRUNCATE TABLE mobee_liquidity_otc.balance_ingest"))
-        self._session.commit()
+        with self.session_scope() as session:
+            session.execute(text("TRUNCATE TABLE mobee_liquidity_otc.balance_ingest"))
 
-    def insert_total_balance(self, rows: list[LiquidityBalanceRawData]) -> None:
-        self._session.execute(
-            text(
-                "INSERT INTO mobee_liquidity_otc.balance_ingest "
-                "(timestamp, platform, source_name, currency, network, amount) "
-                "VALUES (:timestamp, :platform, :source_name, :currency, :network, :amount)"
-            ),
-            [r.model_dump() for r in rows],
-        )
-        self._session.commit()
+    def insert_total_balance(self, rows: list[LiquidityBalanceRawData]) -> int:
+        """Insert balance rows; return the number written.
+
+        Returns 0 for an empty batch (caller decides whether that's a warning).
+        Raises on DB failure — session_scope rolls back, then re-raises.
+        """
+        if not rows:
+            return 0
+        with self.session_scope() as session:
+            session.execute(
+                text(
+                    "INSERT INTO mobee_liquidity_otc.balance_ingest "
+                    "(timestamp, platform, source_name, currency, network, amount) "
+                    "VALUES (:timestamp, :platform, :source_name, :currency, :network, :amount)"
+                ),
+                [r.model_dump() for r in rows],
+            )
+        return len(rows)

@@ -4,14 +4,13 @@ import logging
 import sys
 from typing import Any
 
-from src.client.clickhouse import SessionLocal
 from src.client.spreadsheet import SpreadsheetClient
 from src.repository.balance_ingest import BalanceIngestRepository
-from src.service.balance_ingest import SpreadsheetBalanceIngestService
-from src.service.cw_balance import CWBalanceIngestService
-from src.service.cw_evm_balance import build_cw_evm_ingest_service
-from src.service.fireblocks import build_fireblocks_ingest_service
-from src.service.tronscan import build_tron_liquidity_service
+from src.service.platform.spreadsheet import SpreadsheetIngestService
+from src.service.platform.binance import build_binance_ingest_service
+from src.service.platform.cold_wallet_balance import build_cold_wallet_ingest_service
+from src.service.platform.fireblocks import build_fireblocks_ingest_service
+from src.service.platform.gate import build_gate_ingest_service
 
 logging.basicConfig(
     level=logging.INFO,
@@ -21,12 +20,14 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 # --- Composition root ---
-_session = SessionLocal()
-repo = BalanceIngestRepository(_session)
+repo = BalanceIngestRepository()
 fireblocks_service = build_fireblocks_ingest_service(repo)
-cw_tron_service = CWBalanceIngestService(build_tron_liquidity_service(), repo)
-cw_evm_service = build_cw_evm_ingest_service(repo)
-spreadsheet_service = SpreadsheetBalanceIngestService(SpreadsheetClient(), repo)
+cold_wallet_service = build_cold_wallet_ingest_service(repo)
+binance_main_service = build_binance_ingest_service(repo, account="main")
+binance_sub_service = build_binance_ingest_service(repo, account="sub")
+gate_main_service = build_gate_ingest_service(repo, account="main")
+gate_sub_service = build_gate_ingest_service(repo, account="sub")
+spreadsheet_service = SpreadsheetIngestService(SpreadsheetClient(), repo)
 
 
 def _total_rows(result: Any) -> int:
@@ -64,19 +65,17 @@ def print_summary(results: dict[str, Any]) -> bool:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run all platform ingest services")
-    parser.add_argument("--full", action="store_true", help="Truncate balance_ingest before running")
-    args = parser.parse_args()
-
     repo.ensure_table()
-    if args.full:
-        log.info("--full: truncating balance_ingest")
-        repo.truncate()
+
 
     results = {
-        "fireblocks":  run_service("Fireblocks",           fireblocks_service),
-        "cw_tron":     run_service("CW wallets (Tron)",    cw_tron_service),
-        "cw_evm":      run_service("CW wallets (EVM)",     cw_evm_service),
-        "spreadsheet": run_service("Spreadsheet",          spreadsheet_service),
+        "fireblocks":   run_service("Fireblocks",            fireblocks_service),
+        "cold_wallets": run_service("Cold wallets",          cold_wallet_service),
+        "binance_main": run_service("Binance Main (DCI)",   binance_main_service),
+        "binance_sub":  run_service("Binance Sub (DCI)",    binance_sub_service),
+        "gate_main":    run_service("Gate Main (DCI)",       gate_main_service),
+        "gate_sub":     run_service("Gate Sub (DCI)",        gate_sub_service),
+        "spreadsheet":  run_service("Spreadsheet",           spreadsheet_service),
     }
 
     if print_summary(results):

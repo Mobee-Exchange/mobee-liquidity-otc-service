@@ -8,20 +8,20 @@ import yaml
 from pydantic import BaseModel, Field
 
 
-_DEFAULT_CONFIG_PATH = Path("configurations/config.yaml")
+_DEFAULT_CONFIG_PATH = Path("etc/config.yaml")
 
 
-class CWWallet(BaseModel):
+class FireblocksVault(BaseModel):
     name: str = Field(..., alias="Name")
-    address: str = Field(..., alias="Address")
+    id: int = Field(..., alias="id")
 
     model_config = {"populate_by_name": True}
 
 
-class ServiceConfig(BaseModel):
-    fireblocks_vault_ids: list[int] = Field(default_factory=list, alias="FireblocksVaultIds")
-    evm_cw_wallets: list[CWWallet] = Field(default_factory=list, alias="EVMCWWallets")
-    cw_wallets: list[CWWallet] = Field(default_factory=list, alias="CWWallets")
+class ColdWallet(BaseModel):
+    name: str = Field(..., alias="Name")
+    address: str = Field(..., alias="Address")
+    tokens: list[str] = Field(default_factory=list, alias="Token")
 
     model_config = {"populate_by_name": True}
 
@@ -30,10 +30,13 @@ class AppConfig(BaseModel):
     """Non-secret configuration loaded from YAML (configurations/config.yaml).
 
     Credentials and secrets live in .env / Settings (pydantic-settings).
-    This class holds only structural config: vault IDs, wallet addresses, etc.
+    This class holds only structural config: vaults, cold wallet addresses, etc.
+    Keys are top-level in the YAML (no wrapper section).
     """
 
-    service: ServiceConfig = Field(..., alias="ServiceConfig")
+    fireblocks_vaults: list[FireblocksVault] = Field(default_factory=list, alias="FireblocksVaults")
+    # network name (e.g. "Ethereum", "Tron") -> its cold wallets
+    cold_wallets: dict[str, list[ColdWallet]] = Field(default_factory=dict, alias="ColdWallets")
 
     model_config = {"populate_by_name": True}
 

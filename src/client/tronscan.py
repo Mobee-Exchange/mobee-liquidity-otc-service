@@ -2,7 +2,7 @@ from typing import Any
 
 import requests
 
-from src.core.config import get_settings
+from src.core.config import settings
 from src.domain.entity.balance import TokenBalance
 from src.domain.entity.tronscan import (
     TRON_NATIVE_SYMBOL,
@@ -101,4 +101,4 @@ class TronscanClient:
 
 def build_tronscan_client() -> TronscanClient:
     """Build a Tronscan client with the API key pulled from settings."""
-    return TronscanClient(api_key=get_settings().tronscan_api_key)
+    return TronscanClient(api_key=settings.tronscan_api_key)

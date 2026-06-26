@@ -4,7 +4,7 @@ from typing import Any
 
 from fireblocks_sdk import FireblocksSDK
 
-from src.core.config import get_settings
+from src.core.config import settings
 from src.domain.entity.fireblocks import (
     FIREBLOCKS_NETWORK,
     FireblocksAssetBalance,
@@ -134,7 +134,6 @@ def _resolve_secret(secret_key: str) -> str:
 
 def build_fireblocks_client() -> FireblocksClient:
     """Build a Fireblocks client with credentials pulled from settings."""
-    settings = get_settings()
     if not settings.fireblocks_api_key or not settings.fireblocks_secret_key:
         raise FireblocksError("Fireblocks credentials are not configured")
     return FireblocksClient(

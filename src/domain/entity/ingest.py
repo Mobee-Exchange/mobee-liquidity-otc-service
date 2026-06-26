@@ -15,5 +15,7 @@ class LiquidityBalanceRawData(BaseModel):
     platform: str
     source_name: str
     currency: str
-    network: str
+    # An actual blockchain network (ETHEREUM, TRON, ...) for on-chain sources;
+    # "Any" for off-chain sources (Fireblocks, Binance, bank/client balances).
+    network: str = "Any"
     amount: Decimal
