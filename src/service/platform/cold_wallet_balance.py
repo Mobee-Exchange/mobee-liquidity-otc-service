@@ -91,7 +91,6 @@ class ColdWalletBalanceIngestService:
         return len(rows)
 
     def run(self) -> int:
-        self._repo.ensure_table()
         snapshot_ts = datetime.now()
         log.info("Snapshot timestamp: %s", snapshot_ts)
         return self.ingest(snapshot_ts)

@@ -40,10 +40,11 @@ class Settings(BaseSettings):
     # Google Sheets. Path to the service-account credentials JSON file.
     google_sheets_credentials_file: str 
 
-    # Balance ingest spreadsheet (ClientBalance + BalanceIDR tabs)
-    balance_ingest_spreadsheet_url: str 
-    balance_ingest_tab_client: str 
-    balance_ingest_tab_idr_bank: str 
+    # Balance ingest spreadsheet (ClientBalance + BalanceIDR + TradingBalance tabs)
+    balance_ingest_spreadsheet_url: str
+    balance_ingest_tab_client: str
+    balance_ingest_tab_idr_bank: str
+    balance_ingest_tab_trading: str
 
     class Config:
         extra = "allow"

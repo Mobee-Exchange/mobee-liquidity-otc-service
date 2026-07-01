@@ -11,6 +11,8 @@ from src.service.platform.binance import build_binance_ingest_service
 from src.service.platform.cold_wallet_balance import build_cold_wallet_ingest_service
 from src.service.platform.fireblocks import build_fireblocks_ingest_service
 from src.service.platform.gate import build_gate_ingest_service
+from src.service.liquidity_snapshot import LiquiditySnapshotService
+from src.service.balance_difference import BalanceDifferenceService
 
 logging.basicConfig(
     level=logging.INFO,
@@ -28,6 +30,8 @@ binance_sub_service = build_binance_ingest_service(repo, account="sub")
 gate_main_service = build_gate_ingest_service(repo, account="main")
 gate_sub_service = build_gate_ingest_service(repo, account="sub")
 spreadsheet_service = SpreadsheetIngestService(SpreadsheetClient(), repo)
+snapshot_service = LiquiditySnapshotService()
+balance_difference = BalanceDifferenceService()
 
 
 def _total_rows(result: Any) -> int:
@@ -65,8 +69,6 @@ def print_summary(results: dict[str, Any]) -> bool:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run all platform ingest services")
-    repo.ensure_table()
-
 
     results = {
         "fireblocks":   run_service("Fireblocks",            fireblocks_service),
@@ -76,6 +78,8 @@ if __name__ == "__main__":
         "gate_main":    run_service("Gate Main (DCI)",       gate_main_service),
         "gate_sub":     run_service("Gate Sub (DCI)",        gate_sub_service),
         "spreadsheet":  run_service("Spreadsheet",           spreadsheet_service),
+        "difference": run_service("Balance Difference", balance_difference),
+        "snapshot":     run_service("Liquidity snapshot",    snapshot_service)
     }
 
     if print_summary(results):
