@@ -2,6 +2,7 @@
 import argparse
 import logging
 import sys
+from datetime import datetime
 from typing import Any
 
 from src.client.spreadsheet import SpreadsheetClient
@@ -40,11 +41,11 @@ def _total_rows(result: Any) -> int:
     return int(result)
 
 
-def run_service(name: str, service: Any) -> int | Exception:
+def run_service(name: str, service: Any, **kwargs: Any) -> int | Exception:
     log.info("=" * 50)
     log.info("Running: %s", name)
     try:
-        return service.run()
+        return service.run(**kwargs)
     except Exception as exc:
         log.error("%s failed: %s", name, exc)
         return exc
@@ -70,16 +71,22 @@ def print_summary(results: dict[str, Any]) -> bool:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run all platform ingest services")
 
+    # One timestamp for the whole run. Every balance_ingest row and the liquidity
+    # snapshot share it, so they're joinable on the cycle:
+    #   balance_ingest.timestamp == liquidity_net_position_snapshot.snapshot_ts
+    # Balance diff isn't stamped here — it derives its timestamps from balance_ingest.
+    snapshot_ts = datetime.now()
+
     results = {
-        "fireblocks":   run_service("Fireblocks",            fireblocks_service),
-        "cold_wallets": run_service("Cold wallets",          cold_wallet_service),
-        "binance_main": run_service("Binance Main (DCI)",   binance_main_service),
-        "binance_sub":  run_service("Binance Sub (DCI)",    binance_sub_service),
-        "gate_main":    run_service("Gate Main (DCI)",       gate_main_service),
-        "gate_sub":     run_service("Gate Sub (DCI)",        gate_sub_service),
-        "spreadsheet":  run_service("Spreadsheet",           spreadsheet_service),
-        "difference": run_service("Balance Difference", balance_difference),
-        "snapshot":     run_service("Liquidity snapshot",    snapshot_service)
+        "fireblocks":   run_service("Fireblocks",           fireblocks_service,   snapshot_ts=snapshot_ts),
+        "cold_wallets": run_service("Cold wallets",         cold_wallet_service,  snapshot_ts=snapshot_ts),
+        "binance_main": run_service("Binance Main (DCI)",   binance_main_service, snapshot_ts=snapshot_ts),
+        "binance_sub":  run_service("Binance Sub (DCI)",    binance_sub_service,  snapshot_ts=snapshot_ts),
+        "gate_main":    run_service("Gate Main (DCI)",      gate_main_service,    snapshot_ts=snapshot_ts),
+        "gate_sub":     run_service("Gate Sub (DCI)",       gate_sub_service,     snapshot_ts=snapshot_ts),
+        "spreadsheet":  run_service("Spreadsheet",          spreadsheet_service,  snapshot_ts=snapshot_ts),
+        "difference":   run_service("Balance Difference",   balance_difference),
+        "snapshot":     run_service("Liquidity snapshot",   snapshot_service,     snapshot_ts=snapshot_ts),
     }
 
     if print_summary(results):

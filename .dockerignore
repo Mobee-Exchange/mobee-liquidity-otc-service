@@ -1,0 +1,20 @@
+# Build/venv/cache
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.git/
+.gitignore
+.gitattributes
+
+# Secrets — never bake into the image; mounted at runtime by the CronJob
+.env
+*.key
+etc/*.key
+
+# Not needed in the image
+test.ipynb
+*.ipynb
+tests/
+README.md
+CLAUDE.md

@@ -124,8 +124,8 @@ class SpreadsheetIngestService:
             log.warning("No valid rows in '%s' tab", self._settings.balance_ingest_tab_trading)
         return len(rows)
 
-    def run(self, *, full: bool = False) -> dict[str, int]:
-        snapshot_ts = datetime.now()
+    def run(self, *, full: bool = False, snapshot_ts: datetime | None = None) -> dict[str, int]:
+        snapshot_ts = snapshot_ts or datetime.now()
         log.info("Snapshot timestamp: %s", snapshot_ts)
 
         return {

@@ -14,7 +14,10 @@ CREATE TABLE IF NOT EXISTS mobee_liquidity_otc.balance_ingest
     source_name LowCardinality(String),
     currency    LowCardinality(String),
     network     LowCardinality(String),
-    amount      Decimal(38, 18)
+    amount      Decimal(38, 18),
+    -- Logical cycle time = `timestamp` (shared across a run, the join key).
+    -- `created_at` = real physical write time; recovers per-source poll time.
+    created_at  DateTime64(3, 'Asia/Jakarta') DEFAULT now64(3, 'Asia/Jakarta')
 )
 ENGINE = MergeTree()
 PARTITION BY toYYYYMM(timestamp)
@@ -86,7 +89,7 @@ SELECT
     sumIf(amount, platform NOT LIKE 'Client%') AS total_balance,
     sumIf(amount, platform LIKE 'Client%')     AS client_balance,
     sumIf(amount, platform NOT LIKE 'Client%')
-        - sumIf(amount, platform LIKE 'Client%') AS liquidity_balance
+        + sumIf(amount, platform LIKE 'Client%') AS liquidity_balance
 FROM
 (
     SELECT platform, currency, argMax(amount, timestamp) AS amount
@@ -105,6 +108,7 @@ CREATE TABLE mobee_liquidity_otc.liquidity_net_position_snapshot
     `snapshot_ts` DateTime64(3,
  'Asia/Jakarta'),
 
+
     `currency` LowCardinality(String),
 
     `total_balance` Decimal(38,
@@ -120,11 +124,12 @@ CREATE TABLE mobee_liquidity_otc.liquidity_net_position_snapshot
  18)),
 
     `liquidity_balance_usd` Nullable(Decimal(38,
- 18))
+ 18)),
+    `created_at` DateTime64(3, 'Asia/Jakarta') DEFAULT now64(3, 'Asia/Jakarta')
 )
 ENGINE = MergeTree
 PARTITION BY toYYYYMM(snapshot_ts)
-ORDER BY (snapshot_ts,
+ORDER BY (snapshot_ts, 
  currency)
 SETTINGS index_granularity = 8192;
 
@@ -152,7 +157,8 @@ CREATE TABLE mobee_liquidity_otc.balance_diff
  18),
 
     `diff` Decimal(38,
- 18)
+ 18),
+    `created_at` DateTime64(3, 'Asia/Jakarta') DEFAULT now64(3, 'Asia/Jakarta')
 )
 ENGINE = ReplacingMergeTree
 PARTITION BY toYYYYMM(timestamp)

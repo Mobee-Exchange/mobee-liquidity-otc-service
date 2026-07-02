@@ -88,8 +88,8 @@ class FireblocksBalanceIngestService:
             log.warning("No Fireblocks balance rows fetched")
         return len(rows)
 
-    def run(self) -> int:
-        snapshot_ts = datetime.now()
+    def run(self, snapshot_ts: datetime | None = None) -> int:
+        snapshot_ts = snapshot_ts or datetime.now()
         log.info("Snapshot timestamp: %s", snapshot_ts)
         return self.ingest(snapshot_ts)
 

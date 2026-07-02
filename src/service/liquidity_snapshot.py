@@ -23,8 +23,8 @@ class LiquiditySnapshotService:
     def _to_decimal(value) -> Decimal:
         return value if isinstance(value, Decimal) else Decimal(str(value))
 
-    def run(self) -> int:
-        snapshot_ts = datetime.now()
+    def run(self, snapshot_ts: datetime | None = None) -> int:
+        snapshot_ts = snapshot_ts or datetime.now()
         log.info("Snapshot timestamp: %s", snapshot_ts)
 
         with session_scope() as session:
@@ -44,8 +44,8 @@ class LiquiditySnapshotService:
                 price = prices.get(currency)
                 if price is None:
                     log.warning("No USD price for %s — storing NULL valuation", currency)
-                    usd_price = None
-                    liquidity_usd = None
+                    usd_price = 1
+                    liquidity_usd = liquidity
                 else:
                     usd_price = Decimal(str(price))
                     liquidity_usd = liquidity * usd_price
