@@ -1,7 +1,11 @@
 import logging
 from datetime import datetime
 
-from src.client.fireblocks import FireblocksClient, FireblocksError, build_fireblocks_client
+from src.client.fireblocks import (
+    FireblocksClient,
+    FireblocksError,
+    build_fireblocks_client,
+)
 from src.core.app_config import AppConfig, get_app_config
 from src.domain.entity.ingest import LiquidityBalanceRawData
 from src.repository.balance_ingest import BalanceIngestRepository
@@ -47,7 +51,9 @@ class FireblocksBalanceIngestService:
 
             session = SessionLocal()
             try:
-                rows = LiquidityRepository(session).fetch_fireblocks_assets_with_currency()
+                rows = LiquidityRepository(
+                    session
+                ).fetch_fireblocks_assets_with_currency()
             finally:
                 session.close()
         return {row["asset_id"]: row["currency_code"] for row in rows}
@@ -59,7 +65,9 @@ class FireblocksBalanceIngestService:
             vault_id = str(vault.id)
             try:
                 balances = self._client.get_vault_infos(vault_id)
-                print(f"Fetched {len(balances)} balances for vault {vault.name} ({vault_id})")
+                print(
+                    f"Fetched {len(balances)} balances for vault {vault.name} ({vault_id})"
+                )
             except FireblocksError as exc:
                 log.error("Vault %s (%s) failed: %s", vault.name, vault_id, exc)
                 continue
@@ -69,17 +77,28 @@ class FireblocksBalanceIngestService:
                     continue  # skip empty asset slots
                 currency = currency_map.get(b.asset_id)
                 if currency is None:
-                    log.warning("No currency_code for Fireblocks asset_id %r; storing as-is", b.asset_id)
+                    log.warning(
+                        "No currency_code for Fireblocks asset_id %r; storing as-is",
+                        b.asset_id,
+                    )
                     currency = b.asset_id
-                rows.append(LiquidityBalanceRawData(
-                    timestamp=snapshot_ts,
-                    platform="Fireblocks",
-                    source_name=vault.name,
-                    currency=currency,
-                    amount=b.total,
-                ))
-                log.info("  vault=%s (%s) %s -> %s = %s",
-                         vault_id, vault.name, b.asset_id, currency, b.total)
+                rows.append(
+                    LiquidityBalanceRawData(
+                        timestamp=snapshot_ts,
+                        platform="Fireblocks",
+                        source_name=vault.name,
+                        currency=currency,
+                        amount=b.total,
+                    )
+                )
+                log.info(
+                    "  vault=%s (%s) %s -> %s = %s",
+                    vault_id,
+                    vault.name,
+                    b.asset_id,
+                    currency,
+                    b.total,
+                )
 
         if rows:
             self._repo.insert_total_balance(rows)
@@ -94,5 +113,7 @@ class FireblocksBalanceIngestService:
         return self.ingest(snapshot_ts)
 
 
-def build_fireblocks_ingest_service(repo: BalanceIngestRepository) -> FireblocksBalanceIngestService:
+def build_fireblocks_ingest_service(
+    repo: BalanceIngestRepository,
+) -> FireblocksBalanceIngestService:
     return FireblocksBalanceIngestService(build_fireblocks_client(), repo)

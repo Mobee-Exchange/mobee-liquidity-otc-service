@@ -3,9 +3,10 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import QueuePool
 from sqlalchemy import Engine, create_engine
 
+
 def build_engine() -> Engine:
     return create_engine(
-        s.postgres_url, 
+        s.postgres_url,
         poolclass=QueuePool,
         pool_size=s.pool_size,
         max_overflow=s.max_overflow,
@@ -14,11 +15,13 @@ def build_engine() -> Engine:
         pool_pre_ping=True,
     )
 
-SessionLocal = sessionmaker(bind=build_engine(), autoflush= False, autocommit=False)
+
+SessionLocal = sessionmaker(bind=build_engine(), autoflush=False, autocommit=False)
+
 
 def get_postgress_conn():
     db = SessionLocal()
-    try: 
+    try:
         yield db
-    finally: 
+    finally:
         db.close()

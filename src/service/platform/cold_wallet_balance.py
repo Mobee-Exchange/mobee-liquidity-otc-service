@@ -45,7 +45,9 @@ class ColdWalletBalanceIngestService:
     handled correctly. The clean config symbol is stored as ``currency``.
     """
 
-    def __init__(self, repo: BalanceIngestRepository, config: AppConfig | None = None) -> None:
+    def __init__(
+        self, repo: BalanceIngestRepository, config: AppConfig | None = None
+    ) -> None:
         self._repo = repo
         self._config = config or get_app_config()
 
@@ -68,20 +70,32 @@ class ColdWalletBalanceIngestService:
                     try:
                         tb = service.get_balance(wallet.address, symbol)
                     except Exception as exc:
-                        log.error("  [%s] %s %s failed: %s", net_label, wallet.name, symbol, exc)
+                        log.error(
+                            "  [%s] %s %s failed: %s",
+                            net_label,
+                            wallet.name,
+                            symbol,
+                            exc,
+                        )
                         continue
                     if tb is None:
-                        log.warning("  [%s] %s %s returned None", net_label, wallet.name, symbol)
+                        log.warning(
+                            "  [%s] %s %s returned None", net_label, wallet.name, symbol
+                        )
                         continue
-                    rows.append(LiquidityBalanceRawData(
-                        timestamp=snapshot_ts,
-                        platform="Cold Wallet",
-                        source_name=wallet.name,
-                        currency=symbol.upper(),
-                        network=net_label,
-                        amount=tb.amount,
-                    ))
-                    log.info("  [%s] %s %s = %s", net_label, wallet.name, symbol, tb.amount)
+                    rows.append(
+                        LiquidityBalanceRawData(
+                            timestamp=snapshot_ts,
+                            platform="Cold Wallet",
+                            source_name=wallet.name,
+                            currency=symbol.upper(),
+                            network=net_label,
+                            amount=tb.amount,
+                        )
+                    )
+                    log.info(
+                        "  [%s] %s %s = %s", net_label, wallet.name, symbol, tb.amount
+                    )
 
         if rows:
             self._repo.insert_total_balance(rows)
@@ -96,5 +110,7 @@ class ColdWalletBalanceIngestService:
         return self.ingest(snapshot_ts)
 
 
-def build_cold_wallet_ingest_service(repo: BalanceIngestRepository) -> ColdWalletBalanceIngestService:
+def build_cold_wallet_ingest_service(
+    repo: BalanceIngestRepository,
+) -> ColdWalletBalanceIngestService:
     return ColdWalletBalanceIngestService(repo)

@@ -1,11 +1,13 @@
 from sqlalchemy import text, orm
 
+
 class BalanceDifferenceRepository:
     def __init__(self, session: orm.Session):
         self.session = session
 
-    def get_latest_diff(self): 
-        result = self.session.execute(
+    def get_latest_diff(self):
+        result = (
+            self.session.execute(
                 text("""
                 select timestamp, 
                         platform,
@@ -29,12 +31,18 @@ class BalanceDifferenceRepository:
                     WHERE rn = 1                 -- only the newest snapshot per source
                     AND n  > 1                 -- has a prior observation (skip first-ever)
                     AND amount != prev_balance;  -- changed only
-                    """)).mappings().all()
+                    """)
+            )
+            .mappings()
+            .all()
+        )
         result = [dict(row) for row in result]
         if not result:
             return 0
-        self.session.execute(text("""INSERT INTO mobee_liquidity_otc.balance_diff
+        self.session.execute(
+            text("""INSERT INTO mobee_liquidity_otc.balance_diff
                                  (timestamp, platform, source_name, currency, network, prev_balance,balance,diff)
                                  VALUES (:timestamp, :platform, :source_name, :currency, :network, :prev_balance, :balance, :diff)"""),
-                                 result)
+            result,
+        )
         return len(result)

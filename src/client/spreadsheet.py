@@ -19,9 +19,7 @@ class SpreadsheetError(Exception):
 def _get_sheets_client() -> client.Client:
     global _gc
     if _gc is None:
-        _gc = pygsheets.authorize(
-            service_file=settings.google_sheets_credentials_file
-        )
+        _gc = pygsheets.authorize(service_file=settings.google_sheets_credentials_file)
     return _gc
 
 

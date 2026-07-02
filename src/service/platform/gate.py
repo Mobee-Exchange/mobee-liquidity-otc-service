@@ -37,8 +37,12 @@ class GateIngestService:
         while True:
             resp = self._client.get_dual_investment_orders(page=page)
             if resp.status_code != 200:
-                log.error("Gate dual orders page=%d failed: %s %s",
-                          page, resp.status_code, resp.text)
+                log.error(
+                    "Gate dual orders page=%d failed: %s %s",
+                    page,
+                    resp.status_code,
+                    resp.text,
+                )
                 break
             batch = resp.json()
             if not isinstance(batch, list):

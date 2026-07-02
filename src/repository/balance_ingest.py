@@ -39,12 +39,16 @@ class BalanceIngestRepository:
         """Current balance per (platform, source_name, currency, network):
         the newest observation for each, read from the balance_latest view."""
         with self.session_scope() as session:
-            result = session.execute(
-                text(
-                    "SELECT platform, source_name, currency, network, amount, as_of "
-                    "FROM mobee_liquidity_otc.balance_latest"
+            result = (
+                session.execute(
+                    text(
+                        "SELECT platform, source_name, currency, network, amount, as_of "
+                        "FROM mobee_liquidity_otc.balance_latest"
+                    )
                 )
-            ).mappings().all()
+                .mappings()
+                .all()
+            )
         return [dict(row) for row in result]
 
     def insert_total_balance(self, rows: list[LiquidityBalanceRawData]) -> int:

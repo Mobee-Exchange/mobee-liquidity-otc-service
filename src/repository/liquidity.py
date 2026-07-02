@@ -59,4 +59,7 @@ class LiquidityRepository:
             """
         )
         result = self.session.execute(query).mappings().all()
-        return [{"asset_id": row["asset_id"], "currency_code": row["currency_code"]} for row in result]
+        return [
+            {"asset_id": row["asset_id"], "currency_code": row["currency_code"]}
+            for row in result
+        ]

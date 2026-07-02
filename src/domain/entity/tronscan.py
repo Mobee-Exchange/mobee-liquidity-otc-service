@@ -46,8 +46,12 @@ class Tron(Enum):
     """
 
     TRX = TronToken(symbol=TRON_NATIVE_SYMBOL, contract=None, decimals=6, native=True)
-    USDT = TronToken(symbol="USDT", contract="TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", decimals=6)
-    USDC = TronToken(symbol="USDC", contract="TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8", decimals=6)
+    USDT = TronToken(
+        symbol="USDT", contract="TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", decimals=6
+    )
+    USDC = TronToken(
+        symbol="USDC", contract="TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8", decimals=6
+    )
 
     @property
     def token(self) -> TronToken:

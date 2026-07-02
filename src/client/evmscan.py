@@ -70,7 +70,9 @@ class EVMScanClient:
                 )
             return result
 
-        raise EVMScanError(f"Max retries reached: {last_error or 'rate limit exceeded'}")
+        raise EVMScanError(
+            f"Max retries reached: {last_error or 'rate limit exceeded'}"
+        )
 
     def get_native_balance(self, address: str, decimals: int = 18) -> TokenBalance:
         """Balance of the chain's native coin (ETH/BNB/...)."""

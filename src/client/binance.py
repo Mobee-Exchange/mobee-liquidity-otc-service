@@ -18,7 +18,9 @@ class BinanceClients:
         ).hexdigest()
         return signature
 
-    def get_dual_investment_positions(self, status: str, pageIndex: int = None) -> requests.Response:
+    def get_dual_investment_positions(
+        self, status: str, pageIndex: int = None
+    ) -> requests.Response:
         endpoint = "/sapi/v1/dci/product/positions"
         url = self.base_url + endpoint
 
@@ -27,7 +29,7 @@ class BinanceClients:
             pageIndex = 1
 
         params = {
-            "status" : status,
+            "status": status,
             "timestamp": int(time.time() * 1000),
             "pageSize": 100,
             "pageIndex": pageIndex,

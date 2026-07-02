@@ -103,17 +103,23 @@ class Ethereum(_ChainTokens, Enum):
         symbol="USDC", contract="0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", decimals=6
     )
     STBT = EVMToken(
-        symbol="STBT", contract="0x530824DA86689C9C17CdC2871Ff29B058345b44a", decimals=18
+        symbol="STBT",
+        contract="0x530824DA86689C9C17CdC2871Ff29B058345b44a",
+        decimals=18,
     )
 
 
 class Bsc(_ChainTokens, Enum):
     BNB = _native(EVMChain.bsc)
     USDT = EVMToken(
-        symbol="USDT", contract="0x55d398326f99059fF775485246999027B3197955", decimals=18
+        symbol="USDT",
+        contract="0x55d398326f99059fF775485246999027B3197955",
+        decimals=18,
     )
     USDC = EVMToken(
-        symbol="USDC", contract="0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d", decimals=18
+        symbol="USDC",
+        contract="0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
+        decimals=18,
     )
 
 

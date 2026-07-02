@@ -25,7 +25,7 @@ class BinanceIngestService:
         self,
         client: BinanceClients,
         repo: BalanceIngestRepository,
-        source_name: str ,
+        source_name: str,
     ) -> None:
         self._client = client
         self._repo = repo
@@ -36,10 +36,17 @@ class BinanceIngestService:
         positions: list[dict] = []
         page = 1
         while True:
-            resp = self._client.get_dual_investment_positions(status=status, pageIndex=page)
+            resp = self._client.get_dual_investment_positions(
+                status=status, pageIndex=page
+            )
             if resp.status_code != 200:
-                log.error("DCI status=%s page=%d failed: %s %s",
-                          status, page, resp.status_code, resp.text)
+                log.error(
+                    "DCI status=%s page=%d failed: %s %s",
+                    status,
+                    page,
+                    resp.status_code,
+                    resp.text,
+                )
                 break
             batch = resp.json().get("list", [])
             positions.extend(batch)
@@ -98,6 +105,8 @@ def build_binance_ingest_service(
     try:
         key_attr, secret_attr = _BINANCE_CREDS[account]
     except KeyError:
-        raise ValueError(f"Unknown Binance account {account!r}; expected 'main' or 'sub'")
+        raise ValueError(
+            f"Unknown Binance account {account!r}; expected 'main' or 'sub'"
+        )
     client = BinanceClients(getattr(settings, key_attr), getattr(settings, secret_attr))
     return BinanceIngestService(client, repo, source_name=account)

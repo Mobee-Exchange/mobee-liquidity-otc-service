@@ -5,9 +5,10 @@ from sqlalchemy import Engine, create_engine
 from contextlib import contextmanager
 from typing import Iterator
 
+
 def build_engine() -> Engine:
     return create_engine(
-        s.clickhouse_url, 
+        s.clickhouse_url,
         poolclass=QueuePool,
         pool_size=s.pool_size,
         max_overflow=s.max_overflow,
@@ -16,7 +17,9 @@ def build_engine() -> Engine:
         pool_pre_ping=True,
     )
 
-SessionLocal = sessionmaker(bind=build_engine(), autoflush= False, autocommit=False)
+
+SessionLocal = sessionmaker(bind=build_engine(), autoflush=False, autocommit=False)
+
 
 def get_clickhouse_connection():
     db = SessionLocal()

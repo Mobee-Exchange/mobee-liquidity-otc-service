@@ -34,9 +34,13 @@ class AppConfig(BaseModel):
     Keys are top-level in the YAML (no wrapper section).
     """
 
-    fireblocks_vaults: list[FireblocksVault] = Field(default_factory=list, alias="FireblocksVaults")
+    fireblocks_vaults: list[FireblocksVault] = Field(
+        default_factory=list, alias="FireblocksVaults"
+    )
     # network name (e.g. "Ethereum", "Tron") -> its cold wallets
-    cold_wallets: dict[str, list[ColdWallet]] = Field(default_factory=dict, alias="ColdWallets")
+    cold_wallets: dict[str, list[ColdWallet]] = Field(
+        default_factory=dict, alias="ColdWallets"
+    )
 
     model_config = {"populate_by_name": True}
 

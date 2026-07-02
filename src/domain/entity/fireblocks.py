@@ -14,8 +14,20 @@ FIREBLOCKS_NETWORK: Final[str] = "fireblocks"
 
 # Known chain suffixes (last "_" segment) that should be stripped off the ticker.
 _FB_CHAIN_SUFFIXES: set[str] = {
-    "ETH", "ERC20", "BSC", "BEP20", "ARB", "OP", "OPT",
-    "TRX", "TRON", "TRC20", "MATIC", "POLYGON", "SOL", "AVAX",
+    "ETH",
+    "ERC20",
+    "BSC",
+    "BEP20",
+    "ARB",
+    "OP",
+    "OPT",
+    "TRX",
+    "TRON",
+    "TRC20",
+    "MATIC",
+    "POLYGON",
+    "SOL",
+    "AVAX",
 }
 
 # Explicit currency overrides for irregular asset IDs the suffix rule can't parse

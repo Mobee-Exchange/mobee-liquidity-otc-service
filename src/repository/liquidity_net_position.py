@@ -16,12 +16,16 @@ class LiquidityNetPositionRepository:
 
     def fetch_net_position(self) -> list[dict]:
         """Current net liquidity per currency, in native units."""
-        result = self.session.execute(
-            text(
-                "SELECT currency, total_balance, client_balance, liquidity_balance "
-                "FROM mobee_liquidity_otc.liquidity_net_position"
+        result = (
+            self.session.execute(
+                text(
+                    "SELECT currency, total_balance, client_balance, liquidity_balance "
+                    "FROM mobee_liquidity_otc.liquidity_net_position"
+                )
             )
-        ).mappings().all()
+            .mappings()
+            .all()
+        )
         return [dict(row) for row in result]
 
     def insert_snapshot(self, snapshot_ts: datetime, rows: list[dict]) -> int:

@@ -14,7 +14,9 @@ class SpreadsheetIngestService:
     """Reads ClientBalance, BalanceIDR and TradingBalance tabs from Google Sheets
     and writes to the unified balance_ingest table via BalanceIngestRepository."""
 
-    def __init__(self, sheets: SpreadsheetClient, repo: BalanceIngestRepository) -> None:
+    def __init__(
+        self, sheets: SpreadsheetClient, repo: BalanceIngestRepository
+    ) -> None:
         self._sheets = sheets
         self._repo = repo
         self._settings = settings
@@ -36,7 +38,10 @@ class SpreadsheetIngestService:
 
     def ingest_client_balances(self, snapshot_ts: datetime) -> int:
         log.info("Reading tab '%s'…", self._settings.balance_ingest_tab_client)
-        df = self._sheets.read(self._settings.balance_ingest_spreadsheet_url, self._settings.balance_ingest_tab_client)
+        df = self._sheets.read(
+            self._settings.balance_ingest_spreadsheet_url,
+            self._settings.balance_ingest_tab_client,
+        )
         df.columns = [c.strip() for c in df.columns]
 
         rows = []
@@ -47,26 +52,35 @@ class SpreadsheetIngestService:
                 continue
             amount = self._to_decimal(row["balance"], "balance")
             if amount is None:
-                log.warning("Row %d: skipping — unreadable balance for '%s'", i, client_name)
+                log.warning(
+                    "Row %d: skipping — unreadable balance for '%s'", i, client_name
+                )
                 continue
-            rows.append(LiquidityBalanceRawData(
-                timestamp=snapshot_ts,
-                platform="Client Balance",
-                source_name=client_name,
-                currency=self._to_str(row["currency"]),
-                amount=amount,
-            ))
+            rows.append(
+                LiquidityBalanceRawData(
+                    timestamp=snapshot_ts,
+                    platform="Client Balance",
+                    source_name=client_name,
+                    currency=self._to_str(row["currency"]),
+                    amount=amount,
+                )
+            )
 
         if rows:
             self._repo.insert_total_balance(rows)
             log.info("Inserted %d Client Balance rows", len(rows))
         else:
-            log.warning("No valid rows in '%s' tab", self._settings.balance_ingest_tab_client)
+            log.warning(
+                "No valid rows in '%s' tab", self._settings.balance_ingest_tab_client
+            )
         return len(rows)
 
     def ingest_idr_bank_balances(self, snapshot_ts: datetime) -> int:
         log.info("Reading tab '%s'…", self._settings.balance_ingest_tab_idr_bank)
-        df = self._sheets.read(self._settings.balance_ingest_spreadsheet_url, self._settings.balance_ingest_tab_idr_bank)
+        df = self._sheets.read(
+            self._settings.balance_ingest_spreadsheet_url,
+            self._settings.balance_ingest_tab_idr_bank,
+        )
         df.columns = [c.strip() for c in df.columns]
 
         rows = []
@@ -77,26 +91,35 @@ class SpreadsheetIngestService:
                 continue
             amount = self._to_decimal(row["balance"], "balance")
             if amount is None:
-                log.warning("Row %d: skipping — unreadable balance for bank '%s'", i, bank)
+                log.warning(
+                    "Row %d: skipping — unreadable balance for bank '%s'", i, bank
+                )
                 continue
-            rows.append(LiquidityBalanceRawData(
-                timestamp=snapshot_ts,
-                platform=bank,
-                source_name=self._to_str(row["account"]),
-                currency="IDR",
-                amount=amount,
-            ))
+            rows.append(
+                LiquidityBalanceRawData(
+                    timestamp=snapshot_ts,
+                    platform=bank,
+                    source_name=self._to_str(row["account"]),
+                    currency="IDR",
+                    amount=amount,
+                )
+            )
 
         if rows:
             self._repo.insert_total_balance(rows)
             log.info("Inserted %d idr_bank rows", len(rows))
         else:
-            log.warning("No valid rows in '%s' tab", self._settings.balance_ingest_tab_idr_bank)
+            log.warning(
+                "No valid rows in '%s' tab", self._settings.balance_ingest_tab_idr_bank
+            )
         return len(rows)
 
     def ingest_trading_balances(self, snapshot_ts: datetime) -> int:
         log.info("Reading tab '%s'…", self._settings.balance_ingest_tab_trading)
-        df = self._sheets.read(self._settings.balance_ingest_spreadsheet_url, self._settings.balance_ingest_tab_trading)
+        df = self._sheets.read(
+            self._settings.balance_ingest_spreadsheet_url,
+            self._settings.balance_ingest_tab_trading,
+        )
         df.columns = [c.strip() for c in df.columns]
 
         rows = []
@@ -107,24 +130,32 @@ class SpreadsheetIngestService:
                 continue
             amount = self._to_decimal(row["balance"], "balance")
             if amount is None:
-                log.warning("Row %d: skipping — unreadable balance for '%s'", i, currency)
+                log.warning(
+                    "Row %d: skipping — unreadable balance for '%s'", i, currency
+                )
                 continue
-            rows.append(LiquidityBalanceRawData(
-                timestamp=snapshot_ts,
-                platform="Trading Balance",
-                source_name="Total",
-                currency=currency,
-                amount=amount,
-            ))
+            rows.append(
+                LiquidityBalanceRawData(
+                    timestamp=snapshot_ts,
+                    platform="Trading Balance",
+                    source_name="Total",
+                    currency=currency,
+                    amount=amount,
+                )
+            )
 
         if rows:
             self._repo.insert_total_balance(rows)
             log.info("Inserted %d Trading Balance rows", len(rows))
         else:
-            log.warning("No valid rows in '%s' tab", self._settings.balance_ingest_tab_trading)
+            log.warning(
+                "No valid rows in '%s' tab", self._settings.balance_ingest_tab_trading
+            )
         return len(rows)
 
-    def run(self, *, full: bool = False, snapshot_ts: datetime | None = None) -> dict[str, int]:
+    def run(
+        self, *, full: bool = False, snapshot_ts: datetime | None = None
+    ) -> dict[str, int]:
         snapshot_ts = snapshot_ts or datetime.now()
         log.info("Snapshot timestamp: %s", snapshot_ts)
 
