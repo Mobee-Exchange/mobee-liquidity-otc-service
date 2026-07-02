@@ -11,21 +11,6 @@ from pydantic import BaseModel, Field
 _DEFAULT_CONFIG_PATH = Path("src/core/config.yaml")
 
 
-class FireblocksVault(BaseModel):
-    name: str = Field(..., alias="Name")
-    id: int = Field(..., alias="id")
-
-    model_config = {"populate_by_name": True}
-
-
-class ColdWallet(BaseModel):
-    name: str = Field(..., alias="Name")
-    address: str = Field(..., alias="Address")
-    tokens: list[str] = Field(default_factory=list, alias="Token")
-
-    model_config = {"populate_by_name": True}
-
-
 class AppConfig(BaseModel):
     """Non-secret configuration loaded from YAML (configurations/config.yaml).
 
@@ -48,6 +33,21 @@ class AppConfig(BaseModel):
     def from_yaml(cls, path: Path = _DEFAULT_CONFIG_PATH) -> "AppConfig":
         raw: dict[str, Any] = yaml.safe_load(path.read_text(encoding="utf-8"))
         return cls.model_validate(raw)
+
+
+class FireblocksVault(BaseModel):
+    name: str = Field(..., alias="Name")
+    id: int = Field(..., alias="id")
+
+    model_config = {"populate_by_name": True}
+
+
+class ColdWallet(BaseModel):
+    name: str = Field(..., alias="Name")
+    address: str = Field(..., alias="Address")
+    tokens: list[str] = Field(default_factory=list, alias="Token")
+
+    model_config = {"populate_by_name": True}
 
 
 @lru_cache
