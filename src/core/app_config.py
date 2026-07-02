@@ -8,7 +8,7 @@ import yaml
 from pydantic import BaseModel, Field
 
 
-_DEFAULT_CONFIG_PATH = Path("etc/config.yaml")
+_DEFAULT_CONFIG_PATH = Path("src/core/config.yaml")
 
 
 class FireblocksVault(BaseModel):

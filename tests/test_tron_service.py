@@ -3,7 +3,7 @@ from unittest.mock import Mock
 
 from src.client.tronscan import TronscanClient
 from src.domain.entity.tronscan import Tron
-from src.service.tronscan import TronLiquidityService
+from src.service.platform.tronscan import TronLiquidityService
 from tests.conftest import FakeResponse
 
 TOKENS_PAYLOAD = {
