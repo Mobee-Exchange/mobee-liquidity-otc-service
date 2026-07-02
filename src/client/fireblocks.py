@@ -4,7 +4,7 @@ from typing import Any
 
 from fireblocks_sdk import FireblocksSDK
 
-from src.core.config import get_settings
+from src.core.config import settings
 from src.domain.entity.fireblocks import (
     FIREBLOCKS_NETWORK,
     FireblocksAssetBalance,
@@ -60,10 +60,14 @@ class FireblocksClient:
             for asset in assets
         ]
 
-    def get_vault_balances(self, vault_id: str) -> list[FireblocksAssetBalance]:
+    def get_vault_infos(self, vault_id: int) -> list[FireblocksAssetBalance]:
+        """All asset balances inside a single vault account."""
+        return self.get_vault_balances(vault_id)
+
+    def get_vault_balances(self, vault_id: int) -> list[FireblocksAssetBalance]:
         """All asset balances inside a single vault account."""
         try:
-            account = self._sdk.get_vault_account_by_id(vault_id)
+            account = self._sdk.get_vault_account_by_id(str(vault_id))
         except Exception as exc:  # SDK raises bare Exceptions / API errors
             raise FireblocksError(f"Failed to fetch vault {vault_id}: {exc}") from exc
 
@@ -130,7 +134,6 @@ def _resolve_secret(secret_key: str) -> str:
 
 def build_fireblocks_client() -> FireblocksClient:
     """Build a Fireblocks client with credentials pulled from settings."""
-    settings = get_settings()
     if not settings.fireblocks_api_key or not settings.fireblocks_secret_key:
         raise FireblocksError("Fireblocks credentials are not configured")
     return FireblocksClient(

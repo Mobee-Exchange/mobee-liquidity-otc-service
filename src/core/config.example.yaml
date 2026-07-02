@@ -1,0 +1,19 @@
+# Fireblocks vaults to ingest.
+FireblocksVaults:
+  - Name: "OTC Sending"
+    id: 1
+  - Name: "OTC Receiving"
+    id: 2
+  - Name: "Gas Station"
+    id: 3
+
+# Cold wallets grouped by network.
+ColdWallets:
+  Ethereum:
+    - Name: "CW ETH 1"
+      Address: "0x0000000000000000000000000000000000000000"
+      Token: ["USDT", "USDC"]
+  Tron:
+    - Name: "CW TRON 1"
+      Address: "TXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+      Token: ["USDT", "USDC"]

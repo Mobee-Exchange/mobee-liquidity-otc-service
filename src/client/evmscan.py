@@ -2,7 +2,7 @@ import time
 
 import requests
 
-from src.core.config import get_settings
+from src.core.config import settings
 from src.domain.entity.balance import TokenBalance
 from src.domain.entity.evmscan import EVMChain
 from src.domain.interface.balance import AssetRef
@@ -70,7 +70,9 @@ class EVMScanClient:
                 )
             return result
 
-        raise EVMScanError(f"Max retries reached: {last_error or 'rate limit exceeded'}")
+        raise EVMScanError(
+            f"Max retries reached: {last_error or 'rate limit exceeded'}"
+        )
 
     def get_native_balance(self, address: str, decimals: int = 18) -> TokenBalance:
         """Balance of the chain's native coin (ETH/BNB/...)."""
@@ -144,6 +146,5 @@ _API_KEY_BY_CHAIN = {
 
 def build_evm_client(chain: EVMChain) -> EVMScanClient:
     """Build a client for ``chain`` with its API key pulled from settings."""
-    settings = get_settings()
     api_key = getattr(settings, _API_KEY_BY_CHAIN[chain])
     return EVMScanClient(chain=chain, api_key=api_key)

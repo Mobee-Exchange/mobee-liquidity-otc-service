@@ -2,7 +2,7 @@ from typing import Any
 
 import requests
 
-from src.core.config import get_settings
+from src.core.config import settings
 from src.domain.entity.balance import TokenBalance
 from src.domain.entity.tronscan import (
     TRON_NATIVE_SYMBOL,
@@ -64,13 +64,16 @@ class TronscanClient:
             address=address,
             raw_balance=int(token.get("balance", 0)),
             decimals=int(token.get("tokenDecimal", 0)),
-            symbol=token.get("tokenAbbr") or (TRON_NATIVE_SYMBOL if is_native else None),
+            symbol=token.get("tokenAbbr")
+            or (TRON_NATIVE_SYMBOL if is_native else None),
             token_address=None if is_native else token_id,
         )
 
     def get_all_balances(self, address: str) -> list[TokenBalance]:
         """All token balances held by ``address`` (native TRX included)."""
-        return [self._to_balance(address, token) for token in self._list_tokens(address)]
+        return [
+            self._to_balance(address, token) for token in self._list_tokens(address)
+        ]
 
     def get_token_balance(self, address: str, token_address: str) -> TokenBalance:
         """Balance of a single TRC-20 token; zero balance if not held."""
@@ -101,4 +104,4 @@ class TronscanClient:
 
 def build_tronscan_client() -> TronscanClient:
     """Build a Tronscan client with the API key pulled from settings."""
-    return TronscanClient(api_key=get_settings().tronscan_api_key)
+    return TronscanClient(api_key=settings.tronscan_api_key)

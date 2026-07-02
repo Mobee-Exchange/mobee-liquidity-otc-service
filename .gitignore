@@ -141,6 +141,12 @@ venv.bak/
 
 .vscode
 test.py
+test.ipynb
+testing.ipynb
+tests/
+
+# configs
+config.yaml 
 
 # Spyder project settings
 .spyderproject

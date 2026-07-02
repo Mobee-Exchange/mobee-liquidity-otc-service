@@ -12,7 +12,7 @@ from src.domain.entity.evmscan import (
     EVMTokenError,
     Optimism,
 )
-from src.service.evmscan import EVMLiquidityService
+from src.service.platform.evmscan import EVMLiquidityService
 from tests.conftest import FakeResponse
 
 
