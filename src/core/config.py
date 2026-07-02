@@ -45,6 +45,15 @@ class Settings(BaseSettings):
     balance_ingest_tab_client: str
     balance_ingest_tab_idr_bank: str
     balance_ingest_tab_trading: str
+    
+    # Database Connection
+    clickhouse_url: str
+    postgres_url: str
+    
+    pool_size: int = 2
+    max_overflow: int = 5
+    pool_timeout: int = 30
+    pool_recycle: int = 900
 
     class Config:
         extra = "allow"
